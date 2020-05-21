@@ -45,7 +45,7 @@ stages:
           echo "sourcebranch: '$BUILD_SOURCEBRANCH'"
 
           if [ "$BUILD_SOURCEBRANCH" != "refs/heads/master" ]; then
-            CONDITIONALBRANCHTAG="${BUILD_SOURCEBRANCH}-"
+            CONDITIONALBRANCHTAG="${BUILD_SOURCEBRANCHNAME}-"
             echo "##vso[task.setvariable variable=conditionalBranchTag]$CONDITIONALBRANCHTAG"
             echo "not master - conditionalBranchTag set to $CONDITIONALBRANCHTAG"
           else
@@ -60,9 +60,7 @@ stages:
         script: |
           echo "conditionalBranchTag: $(conditionalBranchTag)"
         
-          IMAGE_TAG="${DATETAG}$(conditionalBranchTag)"
-
-          IMAGE_TAG="${IMAGE_TAG}-${LMSVERSION}"
+          IMAGE_TAG="${DATETAG}-$(conditionalBranchTag)${LMSVERSION}"
 
           echo "using tag $IMAGE_TAG for image push"
 
