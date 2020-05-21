@@ -53,30 +53,28 @@ stages:
             echo "master - conditionalBranchTag set to $CONDITIONALBRANCHTAG"
           fi
 
-    - task: Bash@3
-      displayName: TEST
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "conditionalBranchTag: $(conditionalBranchTag)"
+    # - task: Bash@3
+    #   displayName: TEST
+    #   inputs:
+    #     targetType: 'inline'
+    #     script: |
+    #       echo "conditionalBranchTag: $(conditionalBranchTag)"
         
-          IMAGE_TAG="${DATETAG}-$(conditionalBranchTag)${LMSVERSION}"
+    #       IMAGE_TAG="${DATETAG}-$(conditionalBranchTag)${LMSVERSION}"
 
-          echo "using tag $IMAGE_TAG for image push"
+    #       echo "using tag $IMAGE_TAG for image push"
 
-          #printenv
+    #       #printenv
 
-          # ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
+    #       # ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
 
-          # echo "image pushed with tag $IMAGE_TAG"
+    #       # echo "image pushed with tag $IMAGE_TAG"
 
-          if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
-            echo "image pushed with tag latest"
-          else
-            echo "we are not on the master branch - skipping latest tag"
-          fi
-
-          printenv
+    #       if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
+    #         echo "image pushed with tag latest"
+    #       else
+    #         echo "we are not on the master branch - skipping latest tag"
+    #       fi
     - task: Bash@3
       displayName: setup qemu
       inputs:
@@ -111,7 +109,7 @@ stages:
         arguments: |
           --build-arg VERSION=$(lmsVersion)
         tags: |
-          $(datetag)-$(lmsVersion)-linux-amd64
+          $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-amd64
     # - task: Docker@2
     #   displayName: build arm32v7 image
     #   inputs:
