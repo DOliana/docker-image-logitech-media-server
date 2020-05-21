@@ -19,6 +19,7 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
   dockerImageName: 'doliana/logitech-media-server'
+  branchTag: ''
 
 stages:
 - stage: Build
@@ -40,34 +41,39 @@ stages:
         targetType: inline
         script: |
           echo "##vso[task.setvariable variable=datetag]$(date +%Y_%m_%d)"
+          
+          if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
+            echo "$(branchTag)"
+            echo "##vso[task.setvariable variable=branchTag]${BUILD_SOURCEBRANCH}"
+            echo "$(branchTag)"
+          fi
 
     - task: Bash@3
-      displayName: setup qemu
+      displayName: TEST
       inputs:
         targetType: 'inline'
         script: |
-          IMAGE_TAG=$(datetag)
+          IMAGE_TAG=$DATETAG
 
           if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
             IMAGE_TAG="${IMAGE_TAG}-${BUILD_SOURCEBRANCH}"
           fi
 
-          IMAGE_TAG="${IMAGE_TAG}-$(lmsVersion)"
+          IMAGE_TAG="${IMAGE_TAG}-${LMSVERSION}"
 
           echo "using tag $IMAGE_TAG for image push"
 
-          printenv
+          #printenv
 
           # ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
 
           # echo "image pushed with tag $IMAGE_TAG"
 
-          # if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
-          #   ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
-          #   echo "image pushed with tag latest"
-          # else
-          #   echo "we are not on the master branch - skipping latest tag"
-          # fi
+          if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
+            echo "image pushed with tag latest"
+          else
+            echo "we are not on the master branch - skipping latest tag"
+          fi
           
     # - task: Bash@3
     #   displayName: setup qemu
