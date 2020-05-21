@@ -12,7 +12,7 @@ ARG PACKAGE_URL=http://www.mysqueezebox.com/update/?version=${VERSION}&revision=
 
 # Install requirements and utilities
 RUN apt-get update && \
-    apt-get -y install curl wget nano faad flac lame sox libio-socket-ssl-perl \
+    apt-get -y install curl wget nano faad flac lame sox libio-socket-ssl-perl libcrypt-openssl-rsa-perl \
     iputils-ping \
     iproute2 \
     && apt-get clean
