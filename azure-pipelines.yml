@@ -47,6 +47,7 @@ stages:
             echo "##vso[task.setvariable variable=branchTag]${BUILD_SOURCEBRANCH}"
             echo "$(branchTag)"
           fi
+          printenv
 
     - task: Bash@3
       displayName: TEST
