@@ -43,6 +43,8 @@ stages:
     
     - task: Bash@3
       displayName: TEST
+      env:
+        BRANCHFULLNAME: $(Build.SourceBranch)
       inputs:
         targetType: 'inline'
         script: |
@@ -52,6 +54,8 @@ stages:
             echo "we are on another branch"
           fi
           echo "branch: $Build.SourceBranch"
+          echo "env branch: $BRANCHFULLNAME"
+          printenv
           
 #     - task: Bash@3
 #       displayName: setup qemu
