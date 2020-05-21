@@ -137,13 +137,17 @@ stages:
       inputs:
         targetType: inline
         script:  |
-           wget https://github.com/estesp/manifest-tool/releases/download/v1.0.2/manifest-tool-linux-amd64
-           mv manifest-tool-linux-amd64 manifest-tool
-           chmod +x manifest-tool
+          wget https://github.com/estesp/manifest-tool/releases/download/v1.0.2/manifest-tool-linux-amd64
+          mv manifest-tool-linux-amd64 manifest-tool
+          chmod +x manifest-tool
 
-           # Create and push manifest-list
-           ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$(datetag)-$(lmsVersion)"
-           ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
+          # output for debug
+          #  echo "dockerImageName: $(dockerImageName)"
+          #  echo "datetag: "
+          #  echo "lmsVersion"
+          # Create and push manifest-list           
+          ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$(datetag)-$(lmsVersion)"
+          ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
 
 #############################################################################################
 # Biuld & Publish Logitech Media Server 7.9.0
