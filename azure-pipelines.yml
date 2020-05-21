@@ -45,7 +45,7 @@ stages:
           echo "sourcebranch: '$BUILD_SOURCEBRANCH'"
 
           if [ "$BUILD_SOURCEBRANCH" != "refs/heads/master" ]; then
-            CONDITIONALBRANCHTAG="${BUILD_SOURCEBRANCH}-""
+            CONDITIONALBRANCHTAG="${BUILD_SOURCEBRANCH}-"
             echo "##vso[task.setvariable variable=conditionalBranchTag]$CONDITIONALBRANCHTAG"
             echo "not master - conditionalBranchTag set to $CONDITIONALBRANCHTAG"
           else
