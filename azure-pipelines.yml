@@ -43,19 +43,16 @@ stages:
     
     - task: Bash@3
       displayName: TEST
-      env:
-        BRANCHFULLNAME: $(Build.SourceBranch)
       inputs:
         targetType: 'inline'
         script: |
-          if ["$Build.SourceBranch" == "refs/heads/master"]; then
+          # $SYSTEM_PULLREQUEST_SOURCEBRANCH='fixBuildForPR'
+          # $BUILD_SOURCEBRANCH='refs/pull/3/merge'
+          if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
             echo "we are on the master branch"
           else
-            echo "we are on another branch"
-          fi
-          echo "branch: $Build.SourceBranch"
-          echo "env branch: $BRANCHFULLNAME"
-          printenv
+            echo "we are on another branch. namely $SYSTEM_PULLREQUEST_SOURCEBRANCH"
+          fi          
           
 #     - task: Bash@3
 #       displayName: setup qemu
