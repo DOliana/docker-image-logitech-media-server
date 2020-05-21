@@ -43,9 +43,8 @@ stages:
           echo "##vso[task.setvariable variable=datetag]$(date +%Y_%m_%d)"
           
           if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
-            echo "$(branchTag)"
-            echo "##vso[task.setvariable variable=branchTag]${BUILD_SOURCEBRANCH}"
-            echo "$(branchTag)"
+            echo "##vso[task.setvariable variable=branchTag]$BUILD_SOURCEBRANCH"
+            echo "var set"
           fi
           printenv
 
@@ -54,7 +53,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          echo "$branchTag"
+          echo "branchtag: $branchTag"
         
           IMAGE_TAG=$DATETAG
 
