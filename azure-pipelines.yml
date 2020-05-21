@@ -19,7 +19,7 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
   dockerImageName: 'doliana/logitech-media-server'
-  branchTag: ''
+  conditionalBranchTag: ''
 
 stages:
 - stage: Build
@@ -45,10 +45,12 @@ stages:
           echo "sourcebranch: '$BUILD_SOURCEBRANCH'"
 
           if [ "$BUILD_SOURCEBRANCH" != "refs/heads/master" ]; then
-            echo "##vso[task.setvariable variable=branchTag]$BUILD_SOURCEBRANCH"
-            echo "not master - var set"
+            CONDITIONALBRANCHTAG="${BUILD_SOURCEBRANCH}-""
+            echo "##vso[task.setvariable variable=conditionalBranchTag]$CONDITIONALBRANCHTAG"
+            echo "not master - conditionalBranchTag set to $CONDITIONALBRANCHTAG"
           else
-            echo "master - no var"
+            CONDITIONALBRANCHTAG=""
+            echo "master - conditionalBranchTag set to $CONDITIONALBRANCHTAG"
           fi
 
     - task: Bash@3
@@ -56,14 +58,9 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          echo "branchtag1: $branchTag"
-          echo "branchtag2: $(branchTag)"
+          echo "conditionalBranchTag: $(conditionalBranchTag)"
         
-          IMAGE_TAG=$DATETAG
-
-          if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
-            IMAGE_TAG="${IMAGE_TAG}-${BUILD_SOURCEBRANCH}"
-          fi
+          IMAGE_TAG="${DATETAG}$(conditionalBranchTag)"
 
           IMAGE_TAG="${IMAGE_TAG}-${LMSVERSION}"
 
@@ -80,7 +77,7 @@ stages:
           else
             echo "we are not on the master branch - skipping latest tag"
           fi
-          
+
     # - task: Bash@3
     #   displayName: setup qemu
     #   inputs:
