@@ -54,6 +54,8 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          echo "$branchTag"
+        
           IMAGE_TAG=$DATETAG
 
           if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
