@@ -76,6 +76,7 @@ stages:
             echo "we are not on the master branch - skipping latest tag"
           fi
 
+          printenv
     # - task: Bash@3
     #   displayName: setup qemu
     #   inputs:
