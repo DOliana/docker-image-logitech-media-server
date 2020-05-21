@@ -53,28 +53,6 @@ stages:
             echo "master - conditionalBranchTag set to $CONDITIONALBRANCHTAG"
           fi
 
-    # - task: Bash@3
-    #   displayName: TEST
-    #   inputs:
-    #     targetType: 'inline'
-    #     script: |
-    #       echo "conditionalBranchTag: $(conditionalBranchTag)"
-        
-    #       IMAGE_TAG="${DATETAG}-$(conditionalBranchTag)${LMSVERSION}"
-
-    #       echo "using tag $IMAGE_TAG for image push"
-
-    #       #printenv
-
-    #       # ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
-
-    #       # echo "image pushed with tag $IMAGE_TAG"
-
-    #       if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
-    #         echo "image pushed with tag latest"
-    #       else
-    #         echo "we are not on the master branch - skipping latest tag"
-    #       fi
     - task: Bash@3
       displayName: setup qemu
       inputs:
@@ -110,30 +88,30 @@ stages:
           --build-arg VERSION=$(lmsVersion)
         tags: |
           $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-amd64
-    # - task: Docker@2
-    #   displayName: build arm32v7 image
-    #   inputs:
-    #     command: build
-    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
-    #     buildContext: $(System.DefaultWorkingDirectory)
-    #     containerRegistry: 'docker hub connection'
-    #     repository: $(dockerImageName)
-    #     arguments: |
-    #       --build-arg VERSION=$(lmsVersion)
-    #     tags: |
-    #       $(datetag)-$(lmsVersion)-linux-arm
-    # - task: Docker@2
-    #   displayName: build arm64v8 image
-    #   inputs:
-    #     command: build
-    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
-    #     buildContext: $(System.DefaultWorkingDirectory)
-    #     containerRegistry: 'docker hub connection'
-    #     repository: $(dockerImageName)
-    #     arguments: |
-    #       --build-arg VERSION=$(lmsVersion)
-    #     tags: |
-    #       $(datetag)-$(lmsVersion)-linux-arm64
+    - task: Docker@2
+      displayName: build arm32v7 image
+      inputs:
+        command: build
+        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
+        buildContext: $(System.DefaultWorkingDirectory)
+        containerRegistry: 'docker hub connection'
+        repository: $(dockerImageName)
+        arguments: |
+          --build-arg VERSION=$(lmsVersion)
+        tags: |
+          $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-arm
+    - task: Docker@2
+      displayName: build arm64v8 image
+      inputs:
+        command: build
+        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
+        buildContext: $(System.DefaultWorkingDirectory)
+        containerRegistry: 'docker hub connection'
+        repository: $(dockerImageName)
+        arguments: |
+          --build-arg VERSION=$(lmsVersion)
+        tags: |
+          $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-arm64
 
     - task: Docker@2
       displayName: push amd64 image
@@ -145,26 +123,26 @@ stages:
         repository: $(dockerImageName)
         tags: |
           $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-amd64
-    # - task: Docker@2
-    #   displayName: push arm32v7 image
-    #   inputs:
-    #     command: push
-    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
-    #     buildContext: $(System.DefaultWorkingDirectory)
-    #     containerRegistry: 'docker hub connection'
-    #     repository: $(dockerImageName)
-    #     tags: |
-    #       $(datetag)-$(lmsVersion)-linux-arm
-    # - task: Docker@2
-    #   displayName: push arm64v8 image
-    #   inputs:
-    #     command: push
-    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
-    #     buildContext: $(System.DefaultWorkingDirectory)
-    #     containerRegistry: 'docker hub connection'
-    #     repository: $(dockerImageName)
-    #     tags: |
-    #       $(datetag)-$(lmsVersion)-linux-arm64
+    - task: Docker@2
+      displayName: push arm32v7 image
+      inputs:
+        command: push
+        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
+        buildContext: $(System.DefaultWorkingDirectory)
+        containerRegistry: 'docker hub connection'
+        repository: $(dockerImageName)
+        tags: |
+          $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-arm
+    - task: Docker@2
+      displayName: push arm64v8 image
+      inputs:
+        command: push
+        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
+        buildContext: $(System.DefaultWorkingDirectory)
+        containerRegistry: 'docker hub connection'
+        repository: $(dockerImageName)
+        tags: |
+          $(datetag)-$(conditionalBranchTag)$(lmsVersion)-linux-arm64
 
 
     # - task: Bash@3
