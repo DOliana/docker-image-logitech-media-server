@@ -40,108 +40,12 @@ stages:
         targetType: inline
         script: |
           echo "##vso[task.setvariable variable=datetag]$(date +%Y_%m_%d)"
-          
+
     - task: Bash@3
       displayName: setup qemu
       inputs:
         targetType: 'inline'
         script: |
-          sudo apt update && sudo apt install qemu-user-static -y
-          sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
-
-          # get qemu-arm-static binaries for builds
-          mkdir tmp
-          pushd tmp &&
-          curl -L -o qemu-arm-static.tar.gz https://github.com/multiarch/qemu-user-static/releases/download/v2.9.1-1/qemu-arm-static.tar.gz &&
-          tar xzf qemu-arm-static.tar.gz &&
-          curl -L -o qemu-aarch64-static.tar.gz https://github.com/multiarch/qemu-user-static/releases/download/v2.9.1-1/qemu-aarch64-static.tar.gz &&
-          tar xzf qemu-aarch64-static.tar.gz &&
-          popd
-    - task: Docker@2
-      displayName: login to docker
-      inputs:
-        containerRegistry: 'docker hub connection'
-        command: 'login'
-
-
-    - task: Docker@2
-      displayName: build amd64 image
-      inputs:
-        command: build
-        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-amd64'
-        buildContext: $(System.DefaultWorkingDirectory)
-        containerRegistry: 'docker hub connection'
-        repository: $(dockerImageName)
-        arguments: |
-          --build-arg VERSION=$(lmsVersion)
-        tags: |
-          $(datetag)-$(lmsVersion)-linux-amd64
-    - task: Docker@2
-      displayName: build arm32v7 image
-      inputs:
-        command: build
-        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
-        buildContext: $(System.DefaultWorkingDirectory)
-        containerRegistry: 'docker hub connection'
-        repository: $(dockerImageName)
-        arguments: |
-          --build-arg VERSION=$(lmsVersion)
-        tags: |
-          $(datetag)-$(lmsVersion)-linux-arm
-    - task: Docker@2
-      displayName: build arm64v8 image
-      inputs:
-        command: build
-        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
-        buildContext: $(System.DefaultWorkingDirectory)
-        containerRegistry: 'docker hub connection'
-        repository: $(dockerImageName)
-        arguments: |
-          --build-arg VERSION=$(lmsVersion)
-        tags: |
-          $(datetag)-$(lmsVersion)-linux-arm64
-
-    - task: Docker@2
-      displayName: push amd64 image
-      inputs:
-        command: push
-        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-amd64'
-        buildContext: $(System.DefaultWorkingDirectory)
-        containerRegistry: 'docker hub connection'
-        repository: $(dockerImageName)
-        tags: |
-          $(datetag)-$(lmsVersion)-linux-amd64
-    - task: Docker@2
-      displayName: push arm32v7 image
-      inputs:
-        command: push
-        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
-        buildContext: $(System.DefaultWorkingDirectory)
-        containerRegistry: 'docker hub connection'
-        repository: $(dockerImageName)
-        tags: |
-          $(datetag)-$(lmsVersion)-linux-arm
-    - task: Docker@2
-      displayName: push arm64v8 image
-      inputs:
-        command: push
-        Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
-        buildContext: $(System.DefaultWorkingDirectory)
-        containerRegistry: 'docker hub connection'
-        repository: $(dockerImageName)
-        tags: |
-          $(datetag)-$(lmsVersion)-linux-arm64
-
-
-    - task: Bash@3
-      displayName: Create and push manifest-list
-      inputs:
-        targetType: inline
-        script:  |
-          wget https://github.com/estesp/manifest-tool/releases/download/v1.0.2/manifest-tool-linux-amd64
-          mv manifest-tool-linux-amd64 manifest-tool
-          chmod +x manifest-tool
-          
           IMAGE_TAG=$(datetag)
 
           if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
@@ -152,16 +56,140 @@ stages:
 
           echo "using tag $IMAGE_TAG for image push"
 
-          ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
+          printenv
 
-          echo "image pushed with tag $IMAGE_TAG"
+          # ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
 
-          if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
-            ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
-            echo "image pushed with tag latest"
-          else
-            echo "we are not on the master branch - skipping latest tag"
-          fi
+          # echo "image pushed with tag $IMAGE_TAG"
+
+          # if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
+          #   ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
+          #   echo "image pushed with tag latest"
+          # else
+          #   echo "we are not on the master branch - skipping latest tag"
+          # fi
+          
+    # - task: Bash@3
+    #   displayName: setup qemu
+    #   inputs:
+    #     targetType: 'inline'
+    #     script: |
+    #       sudo apt update && sudo apt install qemu-user-static -y
+    #       sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
+    #       # get qemu-arm-static binaries for builds
+    #       mkdir tmp
+    #       pushd tmp &&
+    #       curl -L -o qemu-arm-static.tar.gz https://github.com/multiarch/qemu-user-static/releases/download/v2.9.1-1/qemu-arm-static.tar.gz &&
+    #       tar xzf qemu-arm-static.tar.gz &&
+    #       curl -L -o qemu-aarch64-static.tar.gz https://github.com/multiarch/qemu-user-static/releases/download/v2.9.1-1/qemu-aarch64-static.tar.gz &&
+    #       tar xzf qemu-aarch64-static.tar.gz &&
+    #       popd
+    # - task: Docker@2
+    #   displayName: login to docker
+    #   inputs:
+    #     containerRegistry: 'docker hub connection'
+    #     command: 'login'
+
+
+    # - task: Docker@2
+    #   displayName: build amd64 image
+    #   inputs:
+    #     command: build
+    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-amd64'
+    #     buildContext: $(System.DefaultWorkingDirectory)
+    #     containerRegistry: 'docker hub connection'
+    #     repository: $(dockerImageName)
+    #     arguments: |
+    #       --build-arg VERSION=$(lmsVersion)
+    #     tags: |
+    #       $(datetag)-$(lmsVersion)-linux-amd64
+    # - task: Docker@2
+    #   displayName: build arm32v7 image
+    #   inputs:
+    #     command: build
+    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
+    #     buildContext: $(System.DefaultWorkingDirectory)
+    #     containerRegistry: 'docker hub connection'
+    #     repository: $(dockerImageName)
+    #     arguments: |
+    #       --build-arg VERSION=$(lmsVersion)
+    #     tags: |
+    #       $(datetag)-$(lmsVersion)-linux-arm
+    # - task: Docker@2
+    #   displayName: build arm64v8 image
+    #   inputs:
+    #     command: build
+    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
+    #     buildContext: $(System.DefaultWorkingDirectory)
+    #     containerRegistry: 'docker hub connection'
+    #     repository: $(dockerImageName)
+    #     arguments: |
+    #       --build-arg VERSION=$(lmsVersion)
+    #     tags: |
+    #       $(datetag)-$(lmsVersion)-linux-arm64
+
+    # - task: Docker@2
+    #   displayName: push amd64 image
+    #   inputs:
+    #     command: push
+    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-amd64'
+    #     buildContext: $(System.DefaultWorkingDirectory)
+    #     containerRegistry: 'docker hub connection'
+    #     repository: $(dockerImageName)
+    #     tags: |
+    #       $(datetag)-$(lmsVersion)-linux-amd64
+    # - task: Docker@2
+    #   displayName: push arm32v7 image
+    #   inputs:
+    #     command: push
+    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm32v7'
+    #     buildContext: $(System.DefaultWorkingDirectory)
+    #     containerRegistry: 'docker hub connection'
+    #     repository: $(dockerImageName)
+    #     tags: |
+    #       $(datetag)-$(lmsVersion)-linux-arm
+    # - task: Docker@2
+    #   displayName: push arm64v8 image
+    #   inputs:
+    #     command: push
+    #     Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile.linux-arm64v8'
+    #     buildContext: $(System.DefaultWorkingDirectory)
+    #     containerRegistry: 'docker hub connection'
+    #     repository: $(dockerImageName)
+    #     tags: |
+    #       $(datetag)-$(lmsVersion)-linux-arm64
+
+
+    # - task: Bash@3
+    #   displayName: Create and push manifest-list
+    #   inputs:
+    #     targetType: inline
+    #     script:  |
+    #       wget https://github.com/estesp/manifest-tool/releases/download/v1.0.2/manifest-tool-linux-amd64
+    #       mv manifest-tool-linux-amd64 manifest-tool
+    #       chmod +x manifest-tool
+          
+    #       IMAGE_TAG=$(datetag)
+
+    #       if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
+    #         IMAGE_TAG="${IMAGE_TAG}-${BUILD_SOURCEBRANCH}"
+    #       fi
+
+    #       IMAGE_TAG="${IMAGE_TAG}-$(lmsVersion)"
+
+    #       echo "using tag $IMAGE_TAG for image push"
+
+    #       ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
+
+    #       echo "image pushed with tag $IMAGE_TAG"
+
+    #       if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
+    #         ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
+    #         echo "image pushed with tag latest"
+    #       else
+    #         echo "we are not on the master branch - skipping latest tag"
+    #       fi
 
 # #############################################################################################
 # # Biuld & Publish Logitech Media Server 7.9.0
@@ -277,10 +305,33 @@ stages:
 #       inputs:
 #         targetType: inline
 #         script:  |
-#            wget https://github.com/estesp/manifest-tool/releases/download/v1.0.0/manifest-tool-linux-amd64
-#            mv manifest-tool-linux-amd64 manifest-tool
-#            chmod +x manifest-tool
+#           # Create and push manifest-list
+#           ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$(datetag)-$(lmsVersion)"
+#           ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
 
-#            # Create and push manifest-list
-#            ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$(datetag)-$(lmsVersion)"
-#            ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
+           
+
+#           wget https://github.com/estesp/manifest-tool/releases/download/v1.0.2/manifest-tool-linux-amd64
+#           mv manifest-tool-linux-amd64 manifest-tool
+#           chmod +x manifest-tool
+          
+#           IMAGE_TAG=$(datetag)
+
+#           if ["$BUILD_SOURCEBRANCH" != "refs/heads/master"]; then
+#             IMAGE_TAG="${IMAGE_TAG}-${BUILD_SOURCEBRANCH}"
+#           fi
+
+#           IMAGE_TAG="${IMAGE_TAG}-$(lmsVersion)"
+
+#           echo "using tag $IMAGE_TAG for image push"
+
+#           ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):$IMAGE_TAG"
+
+#           echo "image pushed with tag $IMAGE_TAG"
+
+#           if ["$BUILD_SOURCEBRANCH" == "refs/heads/master"]; then
+#             ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template "$(dockerImageName):$(datetag)-$(lmsVersion)-OS-ARCH" --target "$(dockerImageName):latest-$(lmsVersion)"
+#             echo "image pushed with tag latest"
+#           else
+#             echo "we are not on the master branch - skipping latest tag"
+#           fi
